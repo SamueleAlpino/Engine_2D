@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "tetris.h": "c",
+        "sdl.h": "c",
+        "stdlib.h": "c"
+    }
+}
