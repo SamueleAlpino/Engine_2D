@@ -1,8 +1,9 @@
 CC=clang
 CPPCHECK=Cppcheck
-CFLAGS= -Wall  -O3 -ID:\Sam\Convert_point\header -Wno-pragma-pack -Werror
+CFLAGS= -Wall  -O3 -ID:\Sam\Convert_point\header -ID:\Sam\Convert_point\SDL2-2.0.9\include -ID:\Sam\Convert_point\stb-master -Wno-pragma-pack #-Werror
 BINARY= utils
 BINARY_TESTS=utils_tests
+LDFLAGS  = -lSDL2 -L.
 
 ifeq ($(OS),Windows_NT)
 	BINARY:=$(BINARY).exe
@@ -10,7 +11,7 @@ ifeq ($(OS),Windows_NT)
 endif
 
 convert_point: src/main.o src/utils.o
-	$(CC) -o $(BINARY) $^
+	$(CC) -o $(BINARY)  $(LDFLAGS) $^
 
 main.o: src/main.c
 	$(CC) -c -o $@ $(CFLAGS) $^
@@ -25,7 +26,7 @@ tests.o: src/tests.c header/aiv_unit_test.h
 	$(CPPCHECK) $^
 
 test: src/tests.o src/utils.o #every .o to test
-	$(CC) -o $(BINARY_TESTS) $^
+	$(CC) -o $(BINARY_TESTS)  $(LDFLAGS) $^
 	./$(BINARY_TESTS)
 
 clean: 
