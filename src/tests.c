@@ -8,26 +8,33 @@
 
 TEST(max_screen)
 {
-	vector2_t max = point_to_screen(1,1,600,600);
+	vector2_int_t max = point_to_screen(1,1,600,600);
 	ASSERT_THAT(max.x == 600);
+	ASSERT_THAT(max.y == 600);
+
 }	
 
 TEST(half_screen)
 {
-	vector2_t half = point_to_screen(0,1,600,600);
+	vector2_int_t half = point_to_screen(0,1,600,600);
 	ASSERT_THAT(half.x == 300);
+	ASSERT_THAT(half.y == 600);
+
 }	
 
 TEST(min_screen)
 {
-	vector2_t min = point_to_screen(-1,1,600,600);
+	vector2_int_t min = point_to_screen(-1,-1,600,600);
 	ASSERT_THAT(min.x == 0);
+	ASSERT_THAT(min.y == 0);
+
 }	
 
 TEST(point_max)
 {
 	vector2_t max = screen_to_point(600,600,600,600);
 	ASSERT_THAT(max.x == 1);
+
 }	
 
 TEST(point_half)
