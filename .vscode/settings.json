@@ -1,10 +1,8 @@
 {
     "files.associations": {
-        "tetris.h": "c",
         "sdl.h": "c",
-        "stdlib.h": "c",
-        "obj_parser.h": "c",
-        "utils.h": "c",
-        "rendering.h": "c"
+        "shader_utils.h": "c",
+        "libfbxc.h": "c",
+        "glad.h": "c"
     }
 }
