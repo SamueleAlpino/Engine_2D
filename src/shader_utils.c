@@ -1,4 +1,5 @@
 #include <shader_utils.h>
+#include <SDL.h>
 
 static GLuint compile_shader(GLenum shader_type, const char *file_name)
 {
@@ -54,27 +55,51 @@ static GLuint compile_shader(GLenum shader_type, const char *file_name)
         SDL_free(error_log);
         exit(1);
     }
-
     return shader;
 }
 
-GLuint create_program( const char* vertex_shader_name, const char* fragment_shader_name, face_t cull_face )
+GLuint create_program_vgf( const char* vertex_shader_name,const char* geometry_shader_name, const char* fragment_shader_name)
 {
     GLuint program = glCreateProgram();
+    glCullFace(GL_FRONT);
+//    glEnable(GL_DEPTH_TEST);
+    
+    //Compile
+    GLuint vertex_shader   = compile_shader(GL_VERTEX_SHADER, vertex_shader_name);
+    GLuint geometry_shader = compile_shader(GL_GEOMETRY_SHADER, geometry_shader_name);
+    GLuint frag_shader     = compile_shader(GL_FRAGMENT_SHADER, fragment_shader_name);
+   
+    //Attach
+    glAttachShader(program, vertex_shader);
+    glAttachShader(program, geometry_shader);
+    glAttachShader(program, frag_shader);
+    //Link
+    glLinkProgram(program);
+    //Detach
+    glDetachShader(program, vertex_shader);
+    glDetachShader(program, geometry_shader);
+    glDetachShader(program, frag_shader);
+    //Delete
+    glDeleteShader(vertex_shader);
+    glDeleteShader(geometry_shader);
+    glDeleteShader(frag_shader);
+    //Use
+    glUseProgram(program);
 
-    glEnable(GL_DEPTH_TEST);
+    return program;
+}
 
-    if(cull_face == back)
-        glCullFace(GL_BACK);
-    else
-        glCullFace(GL_FRONT);
+GLuint create_program_vf( const char* vertex_shader_name,const char* fragment_shader_name )
+{
+    GLuint program = glCreateProgram();
+    
+    glCullFace(GL_FRONT);
 
     GLuint vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_shader_name);
-    GLuint frag_shader = compile_shader(GL_FRAGMENT_SHADER, fragment_shader_name);
+    GLuint frag_shader   = compile_shader(GL_FRAGMENT_SHADER, fragment_shader_name);
 
     glAttachShader(program, vertex_shader);
     glAttachShader(program, frag_shader);
-
 
     glLinkProgram(program);
 

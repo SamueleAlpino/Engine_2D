@@ -1,11 +1,16 @@
 //clang -Wno-pragma-pack -o Engine2D.exe -I SDL2-2.0.9\include -I header -I stb_image.h -I glad\include -I glad\include\glad  glad\src\glad.c src\main.c src\window.c src\vectors.c src\shader_utils.c src\renderer.c -lSDL2 -L.
 #define STB_IMAGE_IMPLEMENTATION
 #define SDL_MAIN_HANDLED
-#include <stb_image.h>
+#include <window.h>
 #include <shader_utils.h>
+#include <glad.h>
 
 int main(int argc, char **argv)
 {
+    // size_t current_time = SDL_GetPerformanceCounter();
+    // size_t last_time = 0;
+
+    // double deltaTime = 0;
 
     context_t *context = malloc(sizeof(context_t));
     memset(context, 0, sizeof(context_t));
@@ -14,56 +19,58 @@ int main(int argc, char **argv)
 
     create_context(context, 4, 4, "engine");
 
-    GLuint program = create_program("vertex.glsl", "frag.glsl", front);
+    GLuint program = create_program_vf("vertex.glsl", "frag.glsl");
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    
-    mesh_t *mesh = malloc(sizeof(mesh_t));
-    memset(mesh, 0, sizeof(mesh_t));
-    mesh->program = program;
-    mesh_create(mesh, vector2_zero(),mesh->vao);
 
-    int w, h, comp;
-    unsigned char *pixels = stbi_load("idle.png", &w, &h, &comp, 4);
+    texture_t *texture = create_texture("idle.png");
 
-    if (!pixels)
-    {
-        printf("texture not initialized");
-        return -1;
-    }
+    mesh_t *robot = malloc(sizeof(mesh_t));
+    memset(robot, 0, sizeof(mesh_t));
+    robot->program = program;
 
-    mesh_t *ole = malloc(sizeof(mesh_t));
-    memset(ole, 0, sizeof(mesh_t));
-    ole->program = program;
-    mesh_create(ole, vector2_new(10,1),mesh->vao);
+    mesh_create(robot, vector2_new(200, 400), robot->vao);
+    robot->texture = texture;
 
-    glBindVertexArray(mesh->vao);
-    
-    GLuint tex;
+    bind_texture(texture, robot);
 
-    glGenTextures(1,&tex);
-    glActiveTexture(GL_TEXTURE0);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, tex);
-    glTexImage2D(GL_TEXTURE_2D,0,GL_RGBA,w,h,0,GL_RGBA,GL_UNSIGNED_BYTE,pixels);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    // mesh_t *robot_2 = malloc(sizeof(mesh_t));
+    // memset(robot_2, 0, sizeof(mesh_t));
+    // robot_2->program = program;
 
-    free(pixels);
+    // mesh_create(robot_2, vector2_new(0,0),robot_2->vao);
+    // robot_2->texture = texture;
 
-    GLint tex_0 = glGetUniformLocation(mesh->program,"tex");
-    
-    glUniform1i(tex_0, 0);
-    
+    // bind_texture(texture,robot_2);
+
+    // set_position(robot_2, vector2_new(0,0));
+    // GLuint color = glGetUniformLocation(mesh->program, "color_in");
+    // glUniform1fv( color,6,color_array);
+
+    // mesh_t *other = malloc(sizeof(mesh_t));
+    // memset(other, 0, sizeof(mesh_t));
+
+    //  buffer_create(other,vector2_zero());
+    // other->program = program;
+    // mesh_create(other,vector2_new(0.5,0.5), other->vao);
+    // other->texture = texture;
+    // bind_texture(texture,other);
+    // GLint tex_0 = glGetUniformLocation(mesh->program,"tex");
+
+    // generate_buffers(other);
+    // glUniform1i(tex_0, 0);
+
     int state = 0;
 
     for (;;)
     {
+        // last_time = current_time;
+        // current_time = SDL_GetPerformanceCounter();
+
+        // deltaTime = (double)((current_time - last_time) * 1000 / (double)SDL_GetPerformanceFrequency());
+        // deltaTime = (double)((current_time - last_time) / (double)SDL_GetPerformanceFrequency());
+        
         SDL_Event event;
 
         while (SDL_PollEvent(&event))
@@ -71,79 +78,49 @@ int main(int argc, char **argv)
             if (event.type == SDL_QUIT)
                 return 0;
 
-            if (event.type == SDL_KEYDOWN)
-            {
-                if (event.key.keysym.sym == SDLK_ESCAPE)
-                    return 0;
+            if (event.key.keysym.sym == SDLK_ESCAPE)
+                return 0;
 
-                if (state == 0)
-                {
-                    if (event.key.keysym.sym == SDLK_RIGHT)
-                        mesh->rotation.y += 1;
-                    else if (event.key.keysym.sym == SDLK_LEFT)
-                        mesh->rotation.y -= 1;
-                    else if (event.key.keysym.sym == SDLK_UP)
-                        mesh->rotation.x += 1;
-                    else if (event.key.keysym.sym == SDLK_DOWN)
-                        mesh->rotation.x -= 1;
-                    else if (event.key.keysym.sym == SDLK_2)
-                        state = 1;
-                    else if (event.key.keysym.sym == SDLK_3)
-                        state = 2;
-                }
-                else if (state == 1)
-                {
-                    if (event.key.keysym.sym == SDLK_RIGHT)
-                        mesh->position.x += 0.2;
-                    else if (event.key.keysym.sym == SDLK_LEFT)
-                        mesh->position.x -= 0.2;
-                    else if (event.key.keysym.sym == SDLK_UP)
-                        mesh->position.y += 0.2;
-                    else if (event.key.keysym.sym == SDLK_DOWN)
-                        mesh->position.y -= 0.2;
-                    else if (event.key.keysym.sym == SDLK_1)
-                        state = 0;
-                    else if (event.key.keysym.sym == SDLK_3)
-                        state = 2;
-                }
-                else if (state == 2)
-                {
-                    if (event.key.keysym.sym == SDLK_RIGHT)
-                        mesh->scale.x += 0.1;
-                    else if (event.key.keysym.sym == SDLK_LEFT)
-                        mesh->scale.x -= 0.1;
-                    else if (event.key.keysym.sym == SDLK_UP)
-                        mesh->scale.y += 0.1;
-                    else if (event.key.keysym.sym == SDLK_DOWN)
-                        mesh->scale.y -= 0.1;
-                    else if (event.key.keysym.sym == SDLK_1)
-                        state = 0;
-                    else if (event.key.keysym.sym == SDLK_2)
-                        state = 1;
-                }
+            //printf("delta time : %f\n", deltaTime);
+
+            
+            if (state == 0)
+            {
+                mesh_movement(robot, &event, 100, 0.03);
+
+                if (event.key.keysym.sym == SDLK_2)
+                    state = 1;
+                else if (event.key.keysym.sym == SDLK_3)
+                    state = 2;
+            }
+            else if (state == 1)
+            {
+                mesh_rotation(robot, &event, 2, 0.03);
+
+                if (event.key.keysym.sym == SDLK_1)
+                    state = 0;
+                else if (event.key.keysym.sym == SDLK_3)
+                    state = 2;
+            }
+            else if (state == 2)
+            {
+                mesh_scaling(robot, &event, 0.1,  0.03);
+
+                if (event.key.keysym.sym == SDLK_1)
+                    state = 0;
+                else if (event.key.keysym.sym == SDLK_2)
+                    state = 1;
             }
         }
 
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-        set_uniform_locations(mesh);
-      
-
-        //renderizza i valori che vanno tra 0 e 1 con la pipeline che gli ho definito prima
-
-        glDrawArrays(GL_TRIANGLES,0, 6);
-
-        set_uniform_locations(ole);
-
-        glDrawArrays(GL_TRIANGLES,0, 6);
-        
-        //bindo mesh
-        //bindo texture
-        
-
-
+       
+        draw(robot);
+        //   draw(robot_2);
         SDL_GL_SwapWindow(context->window);
+
+        //  glBindFramebuffer(GL_FRAMEBUFFER,0);
     }
 
     return 0;
